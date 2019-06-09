@@ -1,5 +1,7 @@
 package com.tom.usingopenmp;
 
+import java.nio.ByteBuffer;
+
 public class OpenMPTest {
 
     static {
@@ -12,5 +14,9 @@ public class OpenMPTest {
     public static native void howManyCore();
 
     public static native void moreThread();
+
+
+    public static native boolean rgba2yuv420p(
+            ByteBuffer rgba, ByteBuffer yuv, int widht, int height , boolean useOpenMP);
 
 }
