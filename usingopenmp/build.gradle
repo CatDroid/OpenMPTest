@@ -15,7 +15,11 @@ android {
             cmake {
                 cppFlags "-std=c++11 -frtti -fexceptions"
                 abiFilters "armeabi-v7a"
-                arguments "-DANDROID_ARM_NEON=TRUE -DCMAKE_VERBOSE_MAKEFILE=ON"
+                arguments "-DANDROID_ARM_NEON=TRUE"
+                arguments "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON" // vfpv3-d16
+                // arguments "-DANDROID_ABI armeabi-v7a"
+                // arguments "-DANDROID_ABI=armeabi-v7a with NEON"
+                // This is equivalent to setting -DANDROID_ABI=armeabi-v7a and -DANDROID_ARM_NEON=ON.
             }
         }
 
