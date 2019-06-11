@@ -20,7 +20,7 @@ android {
                 // arguments "-DANDROID_ABI armeabi-v7a"
                 // arguments "-DANDROID_ABI=armeabi-v7a with NEON"
                 // This is equivalent to setting -DANDROID_ABI=armeabi-v7a and -DANDROID_ARM_NEON=ON.
-                // ndk-build和cmake打印编译线性打印
+                // ndk-build和cmake打印编译详细打印
                 // https://stackoverflow.com/questions/43439549/force-cmake-in-verbose-mode-via-gradle-and-the-android-ndk
             }
         }

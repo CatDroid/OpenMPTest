@@ -134,7 +134,7 @@ Java_com_tom_usingopenmp_OpenMPTest_rgba2yuv420p(
 
         // 并行加速比 0.07/0.04  串型0.07s  4 个线程0.02s~0.04  8个线程 0.05~0.04 提升效果不明显
 
-        omp_set_num_threads(8);
+        omp_set_num_threads(4);
 
         double before = omp_get_wtime();
         uint8_t* y_plane = yuv ;
@@ -157,18 +157,6 @@ Java_com_tom_usingopenmp_OpenMPTest_rgba2yuv420p(
 //                         +  25 * rgba[4*i + 2] + 128 ) >>8 ) + 16) ;
 //        }
 
-//        {
-//            uint8x8_t a = vhsub_u8 (vdup_n_u8(4),vdup_n_u8(6) ); // h = halve
-//            uint8_t result[8];
-//            vst1_u8(result, a);
-//            LOGD("vhsub_u8 =  %x", result[0]); // ff
-//
-//
-//            uint8_t a1 = 4;
-//            uint8_t a2 = 6;
-//            uint8_t a3 = a1 - a2 ;
-//            LOGE("uint8_t = %x ", a3 ); // fe = -2 的补码
-//        }
 
         int uv_height = height/2 ;
         int uv_width = width/2 ;
@@ -230,4 +218,82 @@ Java_com_tom_usingopenmp_OpenMPTest_rgba2yuv420p(
     }
 
     return JNI_TRUE ;
+}
+
+class Test {
+private:
+    const char* name = "Default";
+public:
+    Test(const char* _name):name(_name){
+        LOGD("[%s] %p", name, this );
+    }
+    ~Test(){
+        LOGD("~[%s] %p", name, this );
+    }
+};
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_tom_usingopenmp_OpenMPTest_doTask(JNIEnv *env, jclass type) {
+
+    #pragma omp parallel
+    {
+        Test temp("parallel") ;
+        #pragma omp single
+        {
+            LOGD("single , num of threads = %d ", omp_get_num_threads());
+
+            Test temp("single") ;
+            #pragma omp task // task[1]  task1和task6会在不同的线程上同时执行
+            {
+                LOGD("Task 1 ,(begin) thread id = %d ", omp_get_thread_num());
+                Test temp2("task1") ; // 在task[1]完成后析构,与task2,3,4,5执行完成点无关
+                sleep(5);
+                LOGD("Task 1 ,(create) thread id = %d ", omp_get_thread_num());
+
+                #pragma omp task // task[2]
+                {
+                    LOGD("Task 2 ,(begin) thread id = %d ", omp_get_thread_num());
+                    sleep(5);
+                    LOGD("Task 2 ,(end)   thread id = %d ", omp_get_thread_num());
+                };
+
+                #pragma omp task // task[3]
+                {
+                    LOGD("Task 3 ,(begin) thread id = %d ", omp_get_thread_num());
+                    sleep(5);
+                    LOGD("Task 3 ,(end)   thread id = %d ", omp_get_thread_num());
+                };
+
+                #pragma omp task // task[4]
+                {
+                    LOGD("Task 4 ,(begin) thread id = %d ", omp_get_thread_num());
+                    sleep(5);
+                    LOGD("Task 4 ,(create)   thread id = %d ", omp_get_thread_num());
+
+                    #pragma omp task // task[5]
+                    {
+                        LOGD("Task 5 ,(begin) thread id = %d ", omp_get_thread_num());
+                        sleep(5);
+                        LOGD("Task 5 ,(end)   thread id = %d ", omp_get_thread_num());
+                    };
+                    LOGD("Task 4 ,(end)   thread id = %d ", omp_get_thread_num());
+                };
+
+                LOGD("Task 1 ,(end) thread id = %d ", omp_get_thread_num());
+            };
+
+            #pragma omp task // task[6]
+            {
+                LOGD("Task 6 ,(begin) thread id = %d ", omp_get_thread_num());
+                sleep(5);
+                LOGD("Task 6 ,(end)   thread id = %d ", omp_get_thread_num());
+            };
+
+        }
+    };//  Test temp("parallel") ; 析构在最后,所有显式任务和隐式任务都完成
+
+
 }

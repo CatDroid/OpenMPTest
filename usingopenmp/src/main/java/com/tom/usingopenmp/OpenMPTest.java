@@ -15,6 +15,8 @@ public class OpenMPTest {
 
     public static native void moreThread();
 
+    public static native void doTask();
+
 
     public static native boolean rgba2yuv420p(
             ByteBuffer rgba, ByteBuffer yuv, int widht, int height , boolean useOpenMP);
